@@ -1,0 +1,234 @@
+class ClockTimer extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.handleBreakUp = this.handleBreakUp.bind(this);
+    this.handleBreakDown = this.handleBreakDown.bind(this);
+    this.handleSessionUp = this.handleSessionUp.bind(this);
+    this.handleSessionDown = this.handleSessionDown.bind(this);
+    this.handlePlayPause = this.handlePlayPause.bind(this);
+    this.update = this.update.bind(this);
+    this.handleReset = this.handleReset.bind(this);
+
+    this.state = {
+      breakLength: 5,
+      sessionLength: 25,
+      totalSeconds: 1500,
+      timeLeft: '25:00',
+      lastUpdate: 0,
+      isPlaying: 'stop',
+      timeState: 'Session',
+      timer: ''
+    }
+
+  }
+
+
+  componentDidMount() {
+    this.interval = setInterval(() => this.update(), 1000);
+  }
+  componentWillUnmount() {
+    clearInterval(this.interval);
+  }
+
+  update() {
+
+    if (this.state.isPlaying == 'play') {
+
+      var newLastUpdate = this.state.lastUpdate + 1000; 
+      var newSecondsLeft = this.state.totalSeconds;
+      var newTimeLeft = this.state.timeLeft;
+      var newTimerLabel = this.state.timeState;
+
+
+      if (this.state.totalSeconds == 1) {
+        document.getElementById("beep").play();
+      }
+
+      if (this.state.totalSeconds > 0) {
+        newSecondsLeft -= 1;
+      } 
+      else {
+        if (this.state.timeState == "Session") {
+          newTimerLabel = "Break";
+          newSecondsLeft = this.state.breakLength * 60;
+          newSecondsLeft -= 1;
+        }
+        if (this.state.timeState == "Break") {
+          newTimerLabel = "Session";
+          newSecondsLeft = this.state.sessionLength * 60;
+          newSecondsLeft -= 1;
+        }
+      }        
+
+      let minutes = Math.floor(newSecondsLeft /60);
+      if (minutes <10) {minutes = "0" + minutes} 
+      let seconds = newSecondsLeft%60;
+      if (seconds <10) {seconds = "0" + seconds}
+      newTimeLeft= minutes + ":" + seconds;
+
+      this.setState ({
+        totalSeconds: newSecondsLeft,
+        timeLeft: newTimeLeft,
+        timeState: newTimerLabel,
+        lastUpdate: newLastUpdate
+      });
+    }
+  }
+
+  handlePlayPause() {
+    let newTimerStatus;
+    let newSecondsLeft = this.state.totalSeconds;
+    let newTimeLeft = this.state.timeLeft;
+
+    if (this.state.isPlaying == 'play') {
+      newTimerStatus = 'pause'; 
+
+    }else if (this.state.isPlaying == 'stop'){
+      newTimerStatus = 'play';
+      newSecondsLeft = this.state.sessionLength * 60;
+      if (this.state.sessionLength < 10)
+      {newTimeLeft = "0"+ this.state.sessionLength + ":" + "00";
+      } else {newTimeLeft = this.state.sessionLength + ":" + "00";}
+    } else if (this.state.isPlaying == "pause") { 
+      newTimerStatus = "play";
+    }
+    
+
+    this.setState ({
+      isPlaying: newTimerStatus,
+      totalSeconds: newSecondsLeft,
+      timeLeft: newTimeLeft,
+      lastUpdate: Date.now() 
+    })
+  }
+
+
+  handleBreakUp() {
+    if(this.state.isPlaying == 'stop'){
+      let val = this.state.breakLength;
+      if(val < 60) {
+        this.setState({
+          breakLength: val+1
+        })
+      }
+    }
+  }
+
+  handleBreakDown() {
+    if(this.state.isPlaying == 'stop'){
+      let val = this.state.breakLength;
+      if(val > 1) {
+        this.setState({
+          breakLength: val-1
+        })
+      }
+    }
+  }
+
+  handleSessionUp() {
+    if(this.state.isPlaying == 'stop'){
+      let val = this.state.sessionLength;
+      if(val < 60) {
+        let timer = `${val+1}:00`
+        this.setState({
+          sessionLength: val+1,
+          timeLeft: timer
+        })
+      }
+    }
+  }
+
+  handleSessionDown() {
+    if(this.state.isPlaying == 'stop'){
+      let val = this.state.sessionLength;
+      if(val > 1) {
+        let timer = `${val-1}:00`
+        this.setState({
+          sessionLength: val-1,
+          timeLeft: timer
+        })
+      }
+    }
+  }
+
+  handleReset() {
+    document.getElementById("beep").pause();
+    document.getElementById("beep").currentTime = 0;
+    this.setState ({
+      breakLength: 5,
+      sessionLength: 25,
+      totalSeconds: 1500,
+      timeLeft: '25:00',
+      lastUpdate: 0,
+      isPlaying: 'stop',
+      timeState: 'Session',
+      timer: ''
+    })
+  }
+
+  render() {
+    return (
+      <div>
+        <Inputs isPlaying={this.state.isPlaying} breakUp={this.handleBreakUp} breakDown={this.handleBreakDown} sessionUp={this.handleSessionUp} sessionDown={this.handleSessionDown} breakLength={this.state.breakLength} sessionLength={this.state.sessionLength}/>
+        <Timer timeType={this.state.timeState} playPause={this.handlePlayPause} reset={this.handleReset} time={this.state.timeLeft}/>
+      </div>
+    )
+  }
+}
+
+class Inputs extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
+    return (
+      <div className="container">
+        <div className="row labels">
+          <p id="break-label">Break Length</p>
+          <p id="session-label">Session Length</p>
+        </div>
+        <div className="row inputs">
+          <button className="btn btn-info" id="break-increment" onClick={this.props.breakUp}>+</button>
+          <div id="break-length">{this.props.breakLength}</div>
+          <button className="btn btn-info" id="break-decrement" onClick={this.props.breakDown}>-</button>
+          
+          
+          <button className="btn btn-info space" id="session-increment" onClick={this.props.sessionUp}>+</button>
+          <div id="session-length">{this.props.sessionLength}</div>
+          <button className="btn btn-info" id="session-decrement" onClick={this.props.sessionDown}>-</button>
+        </div>
+      </div>
+    )
+  }
+}
+
+class Timer extends React.Component {
+  constructor(props) {
+    super(props)
+  }
+  render() {
+    return (
+      <div className="container">
+        <div className="row timer">
+        <h4 id="timer-label">{this.props.timeType}</h4>
+        </div>
+        <div className="row timer">
+          <div id="time-left">{this.props.time}</div>
+        </div>
+
+        <div className="row labels">
+          <button className="btn btn-success" id="start_stop" onClick={this.props.playPause}>Start/Pause</button>
+          <button className="btn btn-danger" id="reset" onClick={this.props.reset}>Reset</button>
+        </div>
+        <audio id="beep" src = "https://www.zapsplat.com/wp-content/uploads/2015/sound-effects-fork-media/fork_media_cartoon_bubbles_bubbling.mp3?_=3"></audio>  
+      </div>
+    )
+  }
+}
+
+ReactDOM.render(
+  <ClockTimer />,
+  document.getElementById('clocu')
+)

@@ -1,0 +1,50 @@
+.all {
+  background-color: #222;
+}
+
+#clocu {
+  display: flex;
+  justify-content: center;
+  color: white;
+}
+
+#break-label, #session-label {
+  font-size: 20px;
+  display: flex;
+}
+
+.labels {
+  justify-content: space-between;
+}
+
+.inputs {
+  display: flex;
+  font-family: monospace;
+  font-size: 36px;
+  justify-content: space-between;
+  font-weight: 700;
+}
+
+.btn-info {
+  font-weight: 700;
+  font-size: 30px;
+  padding: 0px 10px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.space {
+  margin-left: 50px;
+}
+
+#timer-label {
+  padding: 15px;
+  font-size: 40px;
+  font-weight: 700;
+}
+
+.timer {
+  display: flex;
+  font-size: 36px;
+  justify-content: center;
+}
